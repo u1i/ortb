@@ -1,0 +1,5 @@
+python-telegram-bot==21.0
+redis>=5
+python-dotenv>=1
+requests>=2
+openai>=1

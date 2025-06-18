@@ -1,0 +1,26 @@
+# === Core bot identity ===
+BOT_NAME=
+# Jinja-style placeholder {{username}} is replaced with user first name
+BOT_GREETING=Hello {{username}}, I am ${BOT_NAME}, your friendly AI assistant.
+
+# (optional) simple admin password for future extensions
+GOD_MODE_PASSWORD=
+
+# === LLM / OpenRouter ===
+# Model identifier, e.g. openai/gpt-3.5-turbo or google/gemini-2.0-flash-001
+OPENROUTER_LLM=
+# Set to "true" if the chosen model supports the temperature parameter
+OPENROUTER_LLM_TEMPERATURE_SUPPORTED=true
+# Default temperature (only used when *_SUPPORTED is true)
+OPENROUTER_LLM_TEMPERATURE=0.7
+# Your OpenRouter API key
+OPENROUTER_API_KEY=
+
+# === Telegram ===
+TELEGRAM_BOT_TOKEN=
+
+# === Redis ===
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
