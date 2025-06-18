@@ -21,6 +21,8 @@ from .handlers import (
 )
 
 logging.basicConfig(level=logging.INFO)
+# Silence noisy httpx INFO logs (only warnings/errors)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
