@@ -13,6 +13,8 @@ venv/
 .env
 .env.*
 
+system_prompt.md
+
 # Logs
 logs/
 *.log
