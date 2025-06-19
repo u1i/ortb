@@ -114,9 +114,41 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
     photo: PhotoSize = update.message.photo[-1]  # highest resolution
     file = await photo.get_file()
-    _ = await file.download_as_bytearray()  # We ignore image bytes for now
-    reply = "I received your image! Currently, I can only handle text."
-    await update.message.reply_text(reply)
+
+    # Build Telegram file URL that is publicly accessible via bot token
+    # Telegram may return absolute URL or relative path.
+    if file.file_path.startswith("http"):
+        file_url = file.file_path
+    else:
+        file_url = f"https://api.telegram.org/file/bot{settings.TELEGRAM_BOT_TOKEN}/{file.file_path}"
+
+    # Retrieve current conversation
+    user = update.effective_user
+    conv_id = context.user_data.get("conv_id", "default")
+    conv = Conversation(user_id=user.id, conv_id=conv_id)
+
+    # Record in history that the user sent an image (store URL, not bytes)
+    conv.append("user", f"[Image] {file_url}")
+
+    # Build vision message
+    vision_msg = {
+        "role": "user",
+        "content": [
+            {"type": "text", "text": "Here's an image:"},
+            {"type": "image_url", "image_url": {"url": file_url}},
+        ],
+    }
+
+    messages = conv.messages + [vision_msg]
+
+    try:
+        assistant_reply = await asyncio.to_thread(llm_chat, messages)
+    except APIError as exc:
+        logger.error("LLM vision API error: %s", exc)
+        assistant_reply = "Sorry, there was an error processing the image."
+
+    conv.append("assistant", assistant_reply)
+    await update.message.reply_text(assistant_reply)
 
 
 # ---------- Error handler ----------
