@@ -42,7 +42,7 @@ def main() -> None:
 
     # Messages
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_text))
-    app.add_handler(MessageHandler(filters.VOICE, handle_voice))
+    # app.add_handler(MessageHandler(filters.VOICE, handle_voice))  # DISABLED: WIP - needs fixing
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
     # Error

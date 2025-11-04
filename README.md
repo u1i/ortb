@@ -3,7 +3,8 @@
 A reusable Python framework for building Telegram chat-bots powered by large language models (LLMs) via the [OpenRouter](https://openrouter.ai) API.  
 Features:
 
-* **Text, voice & image** handling – voice is auto-transcribed with Whisper.
+* **Text & image** handling – images processed with vision models.
+* **Voice transcription** (⚠️ WIP - currently disabled due to API compatibility issues).
 * **Conversation persistence** in Redis (keyed by bot name / user id / conversation id).
 * **User whitelist** stored in Redis.
 * Fully **environment-driven configuration** via `.env`.
@@ -39,13 +40,36 @@ OPENROUTER_LLM=openai/gpt-4o
 
 If the chosen model supports temperature, leave `OPENROUTER_LLM_TEMPERATURE_SUPPORTED=true`; otherwise set it to `false`.
 
-3. **Get Redis** (local or hosted).  Update `REDIS_HOST/PORT/PASSWORD` in `.env`.
+3. **Set up Redis** - The bot requires a Redis instance for conversation storage and user whitelisting.
 
-4. **Whitelist** yourself:  in Redis set a key `<BOT_NAME>.<your_telegram_user_id>` with any value.  Example with `redis-cli`:
+   **Option A: Local Redis**
+ 
+   ```bash
+   # Install and run Redis locally
+   # macOS: brew install redis && brew services start redis
+   # Linux: sudo apt-get install redis-server && sudo systemctl start redis
+   ```
 
-```bash
-SET monty.123456 true EX 31536000  # 1-year TTL
-```
+   **Option B: Redis Cloud (Free Tier)**
+   - Sign up at [Redis Cloud](https://redis.com/try-free/)
+   - Create a free database
+   - Get your connection details (host, port, password)
+
+   Update `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD` in `.env`.
+
+4. **Whitelist yourself**:
+
+   First, message your bot on Telegram. The bot will respond with:
+   ```
+   Sorry, you are not authorised to use this bot. (user_id=123456789)
+   ```
+
+   Then add your user ID to Redis using `redis-cli`:
+   ```bash
+   SET monty.123456789 true EX 31536000  # Replace 'monty' with your BOT_NAME, use your actual user_id
+   ```
+
+   Or use a Redis GUI client to create the key manually.
 
 5. **Run the bot**:
 
@@ -59,7 +83,7 @@ The bot should start and greet you when you `/start` it in Telegram.
 
 ## How it works
 
-* **Handlers** in `bot/handlers.py` route `/start`, `/help`, text, voice, and photo messages.
+* **Handlers** in `bot/handlers.py` route `/start`, `/help`, text, and photo messages. (Voice handler currently disabled - WIP)
 * **Conversation** objects in `bot/session.py` persist message history (`system`, `user`, `assistant`) in JSON arrays with a TTL (`HISTORY_TTL_SECONDS`).  A fresh conversation id is generated on every `/start` (timestamp-based).
 * **LLM calls** happen in `bot/llm.py` via the OpenAI SDK, pointed at the OpenRouter endpoint.  Temperature is only sent when the model supports it.
 * **Settings** are loaded once at startup from `.env` via `bot/config.py`.
