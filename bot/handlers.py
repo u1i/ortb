@@ -127,14 +127,11 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     conv_id = context.user_data.get("conv_id", "default")
     conv = Conversation(user_id=user.id, conv_id=conv_id)
 
-    # Record in history that the user sent an image (store URL, not bytes)
-    conv.append("user", f"[Image] {file_url}")
-
     # Build vision message
     vision_msg = {
         "role": "user",
         "content": [
-            {"type": "text", "text": "Here's an image:"},
+            {"type": "text", "text": update.message.caption},
             {"type": "image_url", "image_url": {"url": file_url}},
         ],
     }
