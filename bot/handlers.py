@@ -114,6 +114,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
     photo: PhotoSize = update.message.photo[-1]  # highest resolution
     file = await photo.get_file()
+    input_text = update.message.caption or "Here's an image:"
 
     # Build Telegram file URL that is publicly accessible via bot token
     # Telegram may return absolute URL or relative path.
@@ -127,16 +128,19 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     conv_id = context.user_data.get("conv_id", "default")
     conv = Conversation(user_id=user.id, conv_id=conv_id)
 
+    
     # Build vision message
     vision_msg = {
         "role": "user",
         "content": [
-            {"type": "text", "text": update.message.caption},
+            {"type": "text", "text": input_text},
             {"type": "image_url", "image_url": {"url": file_url}},
         ],
     }
 
     messages = conv.messages + [vision_msg]
+    # Record in history that the user sent an image (store URL, not bytes)
+    conv.append("user", vision_msg["content"])
 
     try:
         assistant_reply = await asyncio.to_thread(llm_chat, messages)
